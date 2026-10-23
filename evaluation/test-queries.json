@@ -1,0 +1,92 @@
+[
+  {
+    "id": 1,
+    "query": "ModuleNotFoundError: No module named 'requests'",
+    "language": "python",
+    "expected_record_ids": ["py-001"]
+  },
+  {
+    "id": 2,
+    "query": "NameError: name 'x' is not defined",
+    "language": "python",
+    "expected_record_ids": ["py-003"]
+  },
+  {
+    "id": 3,
+    "query": "Java NullPointerException",
+    "language": "java",
+    "expected_record_ids": ["java-001"]
+  },
+  {
+    "id": 4,
+    "query": "JavaScript ReferenceError",
+    "language": "javascript",
+    "expected_record_ids": ["js-001"]
+  },
+  {
+    "id": 5,
+    "query": "C++ segmentation fault",
+    "language": "cpp",
+    "expected_record_ids": ["cpp-002"]
+  },
+  {
+    "id": 6,
+    "query": "Java KeyError",
+    "language": "java",
+    "expected_record_ids": ["java-004"]
+  },
+  {
+    "id": 7,
+    "query": "JavaScript Cannot read properties",
+    "language": "javascript",
+    "expected_record_ids": ["js-004"]
+  },
+  {
+    "id": 8,
+    "query": "TypeError: unsupported operand type(s)",
+    "language": "python",
+    "expected_record_ids": ["py-004"]
+  },
+  {
+    "id": 9,
+    "query": "IndexError: list index out of range",
+    "language": "python",
+    "expected_record_ids": ["py-005"]
+  },
+  {
+    "id": 10,
+    "query": "C++ undefined reference",
+    "language": "cpp",
+    "expected_record_ids": ["cpp-001"]
+  },
+  {
+    "id": 11,
+    "query": "Java ArrayIndexOutOfBoundsException",
+    "language": "java",
+    "expected_record_ids": ["java-002"]
+  },
+  {
+    "id": 12,
+    "query": "JavaScript SyntaxError",
+    "language": "javascript",
+    "expected_record_ids": ["js-003"]
+  },
+  {
+    "id": 13,
+    "query": "Python FileNotFoundError",
+    "language": "python",
+    "expected_record_ids": ["py-009"]
+  },
+  {
+    "id": 14,
+    "query": "Python ImportError",
+    "language": "python",
+    "expected_record_ids": ["py-002"]
+  },
+  {
+    "id": 15,
+    "query": "KeyError: dictionary key missing",
+    "language": "python",
+    "expected_record_ids": ["py-006"]
+  }
+]

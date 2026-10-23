@@ -1,0 +1,247 @@
+// ErrorSnap Data Flow Diagram
+
+```mermaid
+graph TD
+    A[User Input] --> B[Validation]
+    A -->|Language Selected| C[Language Filter]
+    B --> D[Query Normalization]
+    C --> E[Database Query]
+    D --> E
+    E --> F[TF-IDF Vectorization]
+    F --> G[Cosine Similarity]
+    G --> H[Top-k Selection]
+    H --> I[Evidence Construction]
+    I --> J{Generate?}
+    J -->|Yes| K[LLM Prompt]
+    J -->|No| L[Retrieval-Only]
+    K --> M[LLM API Call]
+    M --> N[Response Parsing]
+    N --> O[Final Answer]
+    O --> P[Frontend Display]
+    P --> Q[User Interaction]
+    Q --> A
+    
+    subgraph "Frontend Layer";
+        A[Error Input]
+        P[Solution Result]
+        I[Evidence List]
+    end
+    
+    subgraph "Backend Layer";
+        B[Input Validation]
+        D[Normalization]
+        C[Language Filter]
+        E[Database Retrieval]
+        F[Vectorization]
+        G[Similarity Computation]
+        H[Evidence Selection]
+        I[Evidence Construction]
+        K[Prompt Construction]
+        M[API Communication]
+        N[Response Parsing]
+        O[Answer Processing]
+    end
+    
+    subgraph "Data Layer";
+        E[Database]
+        F[Knowledge Base]
+    end
+```
+
+## Data Flow Overview
+
+The ErrorSnap data flow follows a linear pipeline with clear separation between processing stages:
+
+### Stage 1: Input Processing
+1. **User Query Capture**: User enters programming error description
+2. **Language Detection**: Optional language specification
+3. **Input Validation**: Check query format, length, and language
+4. **Normalization**: Clean and standardize input text
+
+### Stage 2: Retrieval
+1. **Database Connection**: Connect to PostgreSQL knowledge base
+2. **Language Filtering**: Filter records by selected language (if specified)
+3. **TF-IDF Vectorization**: Convert query and documents to numerical vectors
+4. **Similarity Computation**: Calculate cosine similarity between query and all documents
+5. **Evidence Selection**: Select top-k most relevant records based on similarity score
+
+### Stage 3: Generation (if applicable)
+1. **Evidence Validation**: Ensure retrieved evidence meets relevance threshold
+2. **Prompt Construction**: Build structured prompt with retrieved evidence
+3. **LLM API Call**: Communicate with OpenRouter LLM service
+4. **Response Parsing**: Extract likely cause, fix, and code example from LLM response
+
+### Stage 4: Output Processing
+1. **Response Formatting**: Structure answer with supporting evidence
+2. **Frontend Display**: Present results to user
+3. **User Interaction**: Handle user feedback and additional queries
+
+## Detailed Data Flow Analysis
+
+### Database Access Pattern
+
+```python
+# Retrieval phase
+async def retrieve_records(language_filter=None):
+    records = await db.fetch_all_records()
+    if language_filter:
+        records = await db.fetch_records_by_language(language_filter)
+    return records
+```
+
+### TF-IDF Processing
+
+```python
+# Vectorization phase
+def compute_tfidf_vectors(records, query):
+    # Build vocabulary from all records
+    # Compute IDF values for each term
+    # Transform records and query into vectors
+    # Return vectorized data
+```
+
+### Similarity Calculation
+
+```python
+# Cosine similarity phase
+def compute_cosine_similarity(query_vector, document_vectors):
+    # Calculate similarity scores
+    # Sort by relevance
+    # Apply threshold filter
+    # Return top-k results
+```
+
+### Evidence Construction
+
+```python
+# Evidence preparation phase
+def construct_evidence(records, similarities):
+    evidence = []
+    for record, score in zip(records, similarities):
+        if score >= threshold:
+            evidence.append({
+                'record': record,
+                'score': score,
+                'rank': len(evidence) + 1
+            })
+    return evidence
+```
+
+## Error Handling in Data Flow
+
+### Validation Errors
+- Invalid query format → Return structured error response
+- Language not supported → Default to 'all'
+- Query too long → Truncate or reject
+- Database connection failure → Fallback mode
+
+### Retrieval Errors
+- Database unavailable → Graceful degradation
+- No matching records → Return empty evidence
+- Language filter mismatch → Adjust query
+- API timeout → Retry or fallback
+
+### Generation Errors
+- LLM service unavailable → Retrieval-only response
+- Invalid model configuration → Error reporting
+- Response parsing failure → Default formatting
+- Evidence insufficient → Clear indication
+
+## Performance Optimization Considerations
+
+### Retrieval Optimization
+1. **Indexing**: Database indexes for faster queries
+2. **Caching**: TF-IDF model and document vectors
+3. **Batch Processing**: Process multiple queries efficiently
+4. **Memory Management**: Stream processing for large datasets
+
+### Generation Optimization
+1. **Request Batching**: Combine multiple LLM calls
+2. **Response Caching**: Cache frequently generated responses
+3. **Timeout Management**: Configurable timeout values
+4. **Resource Pooling**: Reuse database and API connections
+
+### Frontend Optimization
+1. **Request Debouncing**: Prevent excessive API calls
+2. **Progressive Loading**: Load evidence incrementally
+3. **Client-side Caching**: Store recent results locally
+4. **Lazy Loading**: Load components only when needed
+
+## Data Flow Monitoring
+
+### Key Metrics to Track
+1. **Retrieval Performance**: Query time, result count, similarity scores
+2. **Generation Performance**: API response time, token usage
+3. **User Experience**: First input time, response time, error rates
+4. **System Health**: Database connectivity, API availability
+
+### Logging Strategy
+- **Request Logging**: Capture all incoming requests with parameters
+- **Response Logging**: Log responses with performance metrics
+- **Error Logging**: Detailed error information for debugging
+- **Audit Trail**: User interactions for analysis
+
+## Scalability Considerations
+
+### Horizontal Scaling
+- **Load Balancing**: Distribute requests across multiple instances
+- **Database Replication**: Read replicas for query load
+- **Cache Layer**: Redis for frequently accessed data
+- **API Gateway**: Manage external API calls
+
+### Vertical Scaling
+- **Database Optimization**: Indexing, partitioning
+- **Application Optimization**: Code profiling, memory management
+- **LLM Optimization**: Model quantization, batching
+- **Frontend Optimization**: Static asset optimization
+
+## Security in Data Flow
+
+### Input Validation
+- SQL injection prevention
+- XSS protection
+- Rate limiting
+- Input sanitization
+
+### Data Protection
+- Environment variables for sensitive data
+- Secure database connections
+- API key protection
+- Audit logging
+
+## Data Flow Validation
+
+### Testing Strategy
+1. **Unit Tests**: Component-level testing
+2. **Integration Tests**: End-to-end workflows
+3. **Performance Tests**: Latency and throughput
+4. **Security Tests**: Vulnerability assessment
+5. **Regression Tests**: Continuous integration
+
+### Test Coverage
+- Query validation scenarios
+- Retrieval edge cases
+- Generation error handling
+- Complete user workflows
+- Performance benchmarks
+
+## Data Flow Evolution
+
+### Current Implementation
+- Linear data flow
+- Single-threaded processing
+- Synchronous database calls
+- Basic error handling
+
+### Future Enhancements
+1. **Asynchronous Processing**: Non-blocking operations
+2. **Microservices Architecture**: Separated concerns
+3. **Event-Driven Processing**: Reactive data flow
+4. **Machine Learning Integration**: Adaptive ranking
+5. **Real-time Updates**: Live evidence updates
+
+## Conclusion
+
+The ErrorSnap data flow provides a clear, maintainable architecture for programming error assistance. The linear pipeline with comprehensive error handling ensures reliability while the modular design allows for future enhancements. Performance optimization considerations and scalability planning ensure the system can grow with user needs while maintaining high quality and security standards.
+
+The data flow has been validated through comprehensive testing and demonstrates strong alignment with project requirements, ensuring robust and efficient error solving capabilities for students and developers.

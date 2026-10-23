@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+references/
+
+# Environment
+.env
+.env.local
+.env.production
+.env.development
+
+# Next.js
+.next/
+out/
+build/
+
+# TypeScript
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# Test and coverage
+.coverage/
+vitest.config.ts
+.cache/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local seed data and temporary files
+database/seed-local.json
+*.log

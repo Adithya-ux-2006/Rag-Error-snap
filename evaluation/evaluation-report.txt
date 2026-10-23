@@ -1,0 +1,181 @@
+
+Evaluation Report for ErrorSnap RAG System
+============================================
+
+Generated: 2026-10-22T18:56:01.062Z
+
+Query Set: 15 test queries (from database/seed.json)
+Seed Records: 25 curated error records
+
+Performance Metrics:
+- Total queries evaluated: 15
+- Top-1 accuracy: 86.67% (13/15)
+- Top-3 accuracy: 93.33% (14/15)
+
+Query Details:
+
+Query ID: 1
+Query: "ModuleNotFoundError: No module named 'requests'"
+Language: python
+Expected Records: py-001
+Retrieved Records: py-001
+Top-1 Correct: ✓
+Top-3 Contains Relevant: ✓
+Score: 0.44875732135501917
+
+---
+
+Query ID: 2
+Query: "NameError: name 'x' is not defined"
+Language: python
+Expected Records: py-003
+Retrieved Records: py-003
+Top-1 Correct: ✓
+Top-3 Contains Relevant: ✓
+Score: 0.5618188581886144
+
+---
+
+Query ID: 3
+Query: "Java NullPointerException"
+Language: java
+Expected Records: java-001
+Retrieved Records: java-002, java-001
+Top-1 Correct: ✗
+Top-3 Contains Relevant: ✓
+Score: 0.22360679774997896, 0.18898223650461365
+
+---
+
+Query ID: 4
+Query: "JavaScript ReferenceError"
+Language: javascript
+Expected Records: js-001
+Retrieved Records: js-001
+Top-1 Correct: ✓
+Top-3 Contains Relevant: ✓
+Score: 0.23599473087476525
+
+---
+
+Query ID: 5
+Query: "C++ segmentation fault"
+Language: cpp
+Expected Records: cpp-002
+Retrieved Records: cpp-002
+Top-1 Correct: ✓
+Top-3 Contains Relevant: ✓
+Score: 0.3488630720816956
+
+---
+
+Query ID: 6
+Query: "Java KeyError"
+Language: java
+Expected Records: java-004
+Retrieved Records: java-002
+Top-1 Correct: ✗
+Top-3 Contains Relevant: ✗
+Score: 0.22360679774997896
+
+---
+
+Query ID: 7
+Query: "JavaScript Cannot read properties"
+Language: javascript
+Expected Records: js-004
+Retrieved Records: js-004
+Top-1 Correct: ✓
+Top-3 Contains Relevant: ✓
+Score: 0.42615569668390696
+
+---
+
+Query ID: 8
+Query: "TypeError: unsupported operand type(s)"
+Language: python
+Expected Records: py-004
+Retrieved Records: py-004
+Top-1 Correct: ✓
+Top-3 Contains Relevant: ✓
+Score: 0.41421905026334305
+
+---
+
+Query ID: 9
+Query: "IndexError: list index out of range"
+Language: python
+Expected Records: py-005
+Retrieved Records: py-005
+Top-1 Correct: ✓
+Top-3 Contains Relevant: ✓
+Score: 0.806410717036658
+
+---
+
+Query ID: 10
+Query: "C++ undefined reference"
+Language: cpp
+Expected Records: cpp-001
+Retrieved Records: cpp-001
+Top-1 Correct: ✓
+Top-3 Contains Relevant: ✓
+Score: 0.39631896815570555
+
+---
+
+Query ID: 11
+Query: "Java ArrayIndexOutOfBoundsException"
+Language: java
+Expected Records: java-002
+Retrieved Records: java-002
+Top-1 Correct: ✓
+Top-3 Contains Relevant: ✓
+Score: 0.4472135954999579
+
+---
+
+Query ID: 12
+Query: "JavaScript SyntaxError"
+Language: javascript
+Expected Records: js-003
+Retrieved Records: js-003
+Top-1 Correct: ✓
+Top-3 Contains Relevant: ✓
+Score: 0.2321521303058385
+
+---
+
+Query ID: 13
+Query: "Python FileNotFoundError"
+Language: python
+Expected Records: py-009
+Retrieved Records: py-009
+Top-1 Correct: ✓
+Top-3 Contains Relevant: ✓
+Score: 0.22061624622564865
+
+---
+
+Query ID: 14
+Query: "Python ImportError"
+Language: python
+Expected Records: py-002
+Retrieved Records: py-002
+Top-1 Correct: ✓
+Top-3 Contains Relevant: ✓
+Score: 0.21409416345781457
+
+---
+
+Query ID: 15
+Query: "KeyError: dictionary key missing"
+Language: python
+Expected Records: py-006
+Retrieved Records: py-006, py-001
+Top-1 Correct: ✓
+Top-3 Contains Relevant: ✓
+Score: 0.48992552765439484, 0.15512079613112173
+
+
+Retrieval Evaluation Complete.

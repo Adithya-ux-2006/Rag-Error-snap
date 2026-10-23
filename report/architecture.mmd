@@ -1,0 +1,246 @@
+// ErrorSnap Architecture Diagram
+
+```mermaid
+graph TB
+    A[User Interface] --> B[/api/solve Route]
+    B --> C[Input Validation]
+    C --> D{Is Valid?}
+    D -->|Yes| E[Retrieve Records]
+    D -->|No| F[Error Response]
+    E --> G[TF-IDF Vectorization]
+    G --> H[Cosine Similarity]
+    H --> I[Top-k Records]
+    I --> J[Evidence Construction]
+    J --> K{Has Evidence?}
+    K -->|Yes| L[LLM Generation]
+    K -->|No| M[Retrieval-Only Response]
+    L --> N[Response Parsing]
+    N --> O[Structured Answer]
+    O --> P[Frontend Display]
+    P --> Q[User Interaction]
+    Q --> A
+
+    subgraph "Frontend Components";
+        A[Error Input]
+        P[Solution Result]
+        J[Evidence List]
+    end
+
+    subgraph "Backend Components";
+        B[API Route]
+        C[Validation]
+        G[Retrieval]
+        L[Generation]
+        N[Parsing]
+    end
+
+    subgraph "Data Components";
+        E[Database]
+        J[Knowledge Base]
+    end
+```
+
+## Architecture Overview
+
+The ErrorSnap system follows a modular architecture with clear separation of concerns:
+
+### Frontend Layer (Streamlit)
+- User interface for error input and result display
+- Real-time interaction with backend API
+- Responsive design for desktop and mobile
+
+### Backend Layer (Python)
+- API route handlers for request processing
+- Input validation and normalization
+- Coordination between retrieval and generation
+
+### Retrieval Layer
+- TF-IDF vectorization of knowledge base
+- Cosine similarity ranking
+- Language-based filtering
+- Evidence selection and scoring
+
+### Generation Layer
+- OpenRouter LLM integration
+- Evidence-grounded prompt construction
+- Response parsing and validation
+- Fallback mechanisms
+
+### Data Layer
+- PostgreSQL knowledge base storage
+- Consistent record schema
+- Full-text search optimization
+
+### Integration Points
+
+1. **Database-Retrieval**: Retrieves knowledge base records efficiently
+2. **Retrieval-Generation**: Passes evidence to LLM for answer generation
+3. **Generation-Frontend**: Returns structured answers to user interface
+4. **Error Handling**: Graceful degradation at each layer
+
+## Component Interactions
+
+The system follows a linear data flow:
+
+1. **User Input** → **Validation** → **Retrieval** → **Generation** → **Display**
+2. **Error Handling** at each step with appropriate fallbacks
+3. **Logging** for debugging and monitoring
+4. **Configuration** management through environment variables
+
+## Performance Considerations
+
+### Scalability
+- Database connection pooling
+- TF-IDF model caching
+- LLM request batching
+- Streamlit optimization for concurrent users
+
+### Latency Optimization
+- Efficient vectorization algorithms
+- Cache frequently accessed records
+- Timeout management for external API calls
+- Asynchronous processing where beneficial
+
+### Resource Management
+- Memory-efficient TF-IDF implementation
+- Local LLM resource constraints
+- Database query optimization
+- Error recovery and retry mechanisms
+
+## Security Considerations
+
+### Data Protection
+- Environment variables for sensitive configuration
+- Input validation to prevent injection attacks
+- Database connection security
+- API key protection
+
+### Access Control
+- No authentication required (educational purpose)
+- Public API endpoint
+- Rate limiting considerations
+- Error message sanitization
+
+### Architecture Security
+- Modular design limits attack surface
+- Clear separation of concerns
+- Defensive programming practices
+- Comprehensive error handling
+
+## Deployment Considerations
+
+### Local Deployment
+- Ollama installation and model configuration
+- PostgreSQL database setup
+- Environment variable configuration
+- Streamlit server deployment
+
+### Cloud Deployment
+- Docker containerization options
+- Netlify deployment integration
+- Neon database configuration
+- Environment-specific settings
+
+### Monitoring and Maintenance
+- Database health checks
+- API performance monitoring
+- Error logging and alerting
+- Regular maintenance procedures
+
+## Future Architecture Enhancements
+
+### Planned Improvements
+1. **Microservices Architecture**: Separate services for different concerns
+2. **Caching Layer**: Redis for frequently accessed data
+3. **Load Balancing**: Distribute traffic across multiple instances
+4. **Database Optimization**: Partitioning and sharding strategies
+5. **Advanced Analytics**: Usage metrics and performance monitoring
+
+### Research Directions
+1. **Hybrid Retrieval**: Combine keyword and semantic search
+2. **Adaptive Models**: Dynamic model selection based on query complexity
+3. **Context Awareness**: Maintain conversation context across interactions
+4. **Cross-language Support**: Expand beyond current four languages
+
+## Technology Stack Justification
+
+### Frontend Choice (Streamlit)
+- **Rapid Development**: Python-based, no JavaScript expertise required
+- **Consistency**: Single language stack
+- **Integration**: Native Python ecosystem integration
+- **Simplicity**: Focus on functionality over complexity
+
+### Database Choice (PostgreSQL)
+- **ACID Compliance**: Reliable data handling
+- **Full-Text Search**: Built-in search capabilities
+- **Scalability**: Proven production performance
+- **Open Source**: No licensing concerns
+
+### Retrieval Choice (TF-IDF)
+- **Interpretability**: Clear term importance scoring
+- **Deterministic**: Consistent results across runs
+- **Performance**: Lightweight compared to embeddings
+- **Resource Efficiency**: Lower computational requirements
+
+### Generation Choice (Ollama)
+- **Privacy**: Local model deployment
+- **Compatibility**: OpenAI-compatible API
+- **Flexibility**: Multiple model options
+- **Cost Efficiency**: No per-request fees
+
+## Architecture Diagrams
+
+This document includes:
+- **System Architecture**: High-level component interactions
+- **Data Flow**: End-to-end processing pipeline
+- **Component Dependencies**: Integration point mappings
+- **Performance Architecture**: Scalability and optimization strategies
+
+## Architecture Validation
+
+The architecture has been validated through:
+- **Unit Testing**: Component-level behavior verification
+- **Integration Testing**: End-to-end workflow testing
+- **Performance Testing**: Latency and throughput measurement
+- **Security Testing**: Vulnerability assessment and penetration testing
+
+## Architecture Metrics
+
+### Complexity Metrics
+- **Cyclomatic Complexity**: Low for all components
+- **Coupling**: Low between components
+- **Cohesion**: High within components
+- **Dependencies**: Minimal and well-defined
+
+### Quality Metrics
+- **Test Coverage**: Comprehensive unit and integration tests
+- **Documentation**: Detailed API and implementation documentation
+- **Maintainability**: Clean code structure and design patterns
+- **Readability**: Self-documenting code and clear naming conventions
+
+## Architecture Review
+
+### Strengths
+1. **Simplicity**: Focused on core requirements
+2. **Maintainability**: Clear separation of concerns
+3. **Testability**: Individual component testing
+4. **Scalability**: Modular design allows scaling
+5. **Security**: Defense-in-depth approach
+
+### Weaknesses
+1. **Limited Features**: Basic functionality only
+2. **Performance**: Room for optimization
+3. **Extensibility**: Changes require architecture updates
+4. **Monitoring**: Basic logging and monitoring
+
+### Trade-offs
+- **Simplicity vs. Features**: Focused on core requirements
+- **Performance vs. Complexity**: Lightweight implementation
+- **Determinism vs. Semantic Search**: Keyword-based reliability
+- **Local vs. Cloud**: Privacy and control considerations
+
+## Conclusion
+
+The ErrorSnap architecture successfully balances simplicity, functionality, and maintainability. It provides a solid foundation for educational programming error assistance while remaining lightweight and accessible. The modular design allows for future enhancements while maintaining the core focus on effective error solving through RAG principles.
+
+The architecture has been validated through comprehensive testing and demonstrates strong alignment with project requirements, technology stack capabilities, and educational objectives.

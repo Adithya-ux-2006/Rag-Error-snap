@@ -1,0 +1,207 @@
+/* globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 240 4% 96%;
+    --foreground: 20 10% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 20 10% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 10% 12%;
+    --primary: 214 76% 43%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 4% 95%;
+    --secondary-foreground: 20 10% 12%;
+    --muted: 240 4% 95%;
+    --muted-foreground: 210 8% 42%;
+    --accent: 240 4% 95%;
+    --accent-foreground: 20 10% 12%;
+    --destructive: 0 70% 54%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 210 8% 83%;
+    --input: 210 8% 83%;
+    --ring: 214 76% 43%;
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  h1 {
+    font-size: 24px;
+    line-height: 1.2;
+    color: hsl(var(--foreground));
+  }
+
+  h2 {
+    font-size: 20px;
+    line-height: 1.3;
+    color: hsl(var(--foreground));
+  }
+
+  h3 {
+    font-size: 16px;
+    line-height: 1.4;
+    color: hsl(var(--foreground));
+  }
+
+  code,
+  pre {
+    font-family: "SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", monospace;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.4);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.6);
+  }
+
+  :focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--ring));
+  }
+}
+
+@layer components {
+  .panel {
+    background-color: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: 8px;
+    box-shadow: 0 1px 3px 0 hsl(var(--foreground) / 0.05);
+  }
+
+  .input-field {
+    display: block;
+    width: 100%;
+    border-radius: 6px;
+    border: 1px solid hsl(var(--input));
+    background-color: hsl(var(--card));
+    padding: 8px 12px;
+    font-size: 14px;
+    color: hsl(var(--foreground));
+  }
+
+  .input-field::placeholder {
+    color: hsl(var(--muted-foreground));
+  }
+
+  .input-field:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--ring));
+    border-color: hsl(var(--ring));
+  }
+
+  .select-field {
+    display: block;
+    width: 100%;
+    border-radius: 6px;
+    border: 1px solid hsl(var(--input));
+    background-color: hsl(var(--card));
+    padding: 8px 12px;
+    font-size: 14px;
+    color: hsl(var(--foreground));
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+
+  .select-field:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--ring));
+    border-color: hsl(var(--ring));
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background-color: hsl(var(--primary));
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 500;
+    color: hsl(var(--primary-foreground));
+    box-shadow: 0 1px 2px 0 hsl(var(--foreground) / 0.05);
+    border: none;
+    cursor: pointer;
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background-color: hsl(214 76% 38%);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background-color: hsl(var(--secondary));
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 500;
+    color: hsl(var(--secondary-foreground));
+    border: 1px solid hsl(var(--border));
+    cursor: pointer;
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    background-color: hsl(240 4% 88%);
+  }
+
+  .code-block {
+    border-radius: 6px;
+    border: 1px solid hsl(var(--border));
+    background-color: hsl(var(--secondary));
+    padding: 12px;
+    overflow-x: auto;
+    font-size: 12px;
+    font-family: "SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", monospace;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    margin-bottom: 8px;
+  }
+}
