@@ -107,7 +107,40 @@
     "recommended_fix": "Review the reported line and surrounding code for missing colons, parentheses, or incorrect indentation. Check that control-flow statements like return are inside functions.",
     "example_code": "# Correct syntax\nif True:\n    print('Hello')\n\ndef my_func():\n    return 42  # return must be inside a function",
     "tags": "python,syntax,colon,brackets,indentation,parser",
-    "searchable_text": "SyntaxError invalid syntax unexpected EOF return outside function colon bracket indentation"
+    "searchable_text": "SyntaxError invalid syntax unexpected EOF return outside function colon bracket indentation unterminated string literal quote parenthesis never closed EOL while scanning"
+  },
+  {
+    "id": "py-011",
+    "language": "python",
+    "error_name": "UnterminatedStringLiteral",
+    "error_message_patterns": "SyntaxError: unterminated string literal (detected at line {n}); SyntaxError: EOL while scanning string literal; SyntaxError: unterminated triple-quoted string literal",
+    "likely_cause": "A string literal is opened with a quote character but never closed before the end of the line (or end of file). This usually means a closing quotation mark is missing, the string is broken across lines without triple quotes, or a quote character inside the string is not escaped.",
+    "recommended_fix": "Find the string that starts on the reported line and add the missing closing quotation mark. If the string must span multiple lines, use triple quotes (''' or \"\"\") or a backslash line continuation. Escape any internal quotes with a backslash (\\\") or switch to the opposite quote style.",
+    "example_code": "# Wrong: unterminated string\n# print(\"What does the Visualize button do?)\n\n# Correct: close the quote\nprint(\"What does the Visualize button do?\")\n\n# Multiline string\ntext = \"\"\"Line one\nLine two\"\"\"",
+    "tags": "python,syntax,string,quote,literal,unterminated,eol,parser,multiline",
+    "searchable_text": "unterminated string literal quote missing quotation mark EOL while scanning triple quoted string escape multiline"
+  },
+  {
+    "id": "py-012",
+    "language": "python",
+    "error_name": "IndentationError",
+    "error_message_patterns": "IndentationError: unexpected indent; IndentationError: expected an indented block; IndentationError: unindent does not match any outer indentation level",
+    "likely_cause": "The indentation of a line does not match Python's block structure. This occurs when a block is indented unexpectedly, when an indented block is required after a colon (if, for, def, class) but is missing, or when tabs and spaces are mixed.",
+    "recommended_fix": "Use consistent indentation (4 spaces is the Python convention) and avoid mixing tabs with spaces. After a colon, indent the block one level. Configure your editor to insert spaces instead of tabs.",
+    "example_code": "# Correct indentation\ndef check(x):\n    if x > 0:\n        return 'positive'\n    return 'not positive'  # aligned with if\n\n# Wrong: unindent does not match any outer level",
+    "tags": "python,syntax,indentation,block,tabs,spaces,colon,parser",
+    "searchable_text": "IndentationError unexpected indent expected indented block unindent does not match spaces tabs colon block structure"
+  },
+  {
+    "id": "py-013",
+    "language": "python",
+    "error_name": "MissingClosingParenthesis",
+    "error_message_patterns": "SyntaxError: '(' was never closed; SyntaxError: unexpected EOF while parsing; SyntaxError: closing parenthesis ')' does not match opening parenthesis '('",
+    "likely_cause": "An opening parenthesis, bracket, or brace was never closed, or the closing character does not match the opening one. The parser reaches the end of the file (EOF) while still inside the unmatched construct.",
+    "recommended_fix": "Count opening and closing characters over the function or statement. Add the missing closing parenthesis, bracket, or brace at the right place. Editors with bracket matching or a linter highlight unmatched pairs.",
+    "example_code": "# Wrong: parenthesis never closed\n# total = sum(1, 2, 3\n\n# Correct\ntotal = sum([1, 2, 3])\nprint(total)",
+    "tags": "python,syntax,parenthesis,bracket,unmatched,eof,parser,expected",
+    "searchable_text": "missing closing parenthesis bracket brace unmatched was never closed unexpected EOF while parsing expected"
   },
   {
     "id": "java-001",

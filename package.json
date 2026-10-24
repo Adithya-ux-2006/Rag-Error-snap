@@ -8,6 +8,7 @@
     "start": "next start",
     "test": "vitest run",
     "test:watch": "vitest",
+    "seed": "tsx database/seed.ts",
     "lint": "next lint",
     "evaluate": "tsx evaluation/evaluate-retrieval.ts"
   },

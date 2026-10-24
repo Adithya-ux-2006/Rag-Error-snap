@@ -2,15 +2,15 @@
 Evaluation Report for ErrorSnap RAG System
 ============================================
 
-Generated: 2026-10-22T18:56:01.062Z
+Generated: 2026-10-24T10:23:48.219Z
 
 Query Set: 15 test queries (from database/seed.json)
-Seed Records: 25 curated error records
+Seed Records: 28 curated error records
 
 Performance Metrics:
 - Total queries evaluated: 15
-- Top-1 accuracy: 86.67% (13/15)
-- Top-3 accuracy: 93.33% (14/15)
+- Top-1 accuracy: 100.00% (15/15)
+- Top-3 accuracy: 100.00% (15/15)
 
 Query Details:
 
@@ -21,7 +21,7 @@ Expected Records: py-001
 Retrieved Records: py-001
 Top-1 Correct: ✓
 Top-3 Contains Relevant: ✓
-Score: 0.44875732135501917
+Score: 0.7604549684672458
 
 ---
 
@@ -29,10 +29,10 @@ Query ID: 2
 Query: "NameError: name 'x' is not defined"
 Language: python
 Expected Records: py-003
-Retrieved Records: py-003
+Retrieved Records: py-003, py-002
 Top-1 Correct: ✓
 Top-3 Contains Relevant: ✓
-Score: 0.5618188581886144
+Score: 0.6859598691110151, 0.1899204464913638
 
 ---
 
@@ -40,10 +40,10 @@ Query ID: 3
 Query: "Java NullPointerException"
 Language: java
 Expected Records: java-001
-Retrieved Records: java-002, java-001
-Top-1 Correct: ✗
+Retrieved Records: java-001
+Top-1 Correct: ✓
 Top-3 Contains Relevant: ✓
-Score: 0.22360679774997896, 0.18898223650461365
+Score: 0.5006925454224795
 
 ---
 
@@ -54,7 +54,7 @@ Expected Records: js-001
 Retrieved Records: js-001
 Top-1 Correct: ✓
 Top-3 Contains Relevant: ✓
-Score: 0.23599473087476525
+Score: 0.29062890351405446
 
 ---
 
@@ -65,18 +65,18 @@ Expected Records: cpp-002
 Retrieved Records: cpp-002
 Top-1 Correct: ✓
 Top-3 Contains Relevant: ✓
-Score: 0.3488630720816956
+Score: 0.5560148435246685
 
 ---
 
 Query ID: 6
-Query: "Java KeyError"
+Query: "Java NumberFormatException: For input string"
 Language: java
 Expected Records: java-004
-Retrieved Records: java-002
-Top-1 Correct: ✗
-Top-3 Contains Relevant: ✗
-Score: 0.22360679774997896
+Retrieved Records: java-004
+Top-1 Correct: ✓
+Top-3 Contains Relevant: ✓
+Score: 0.5768204117663086
 
 ---
 
@@ -87,7 +87,7 @@ Expected Records: js-004
 Retrieved Records: js-004
 Top-1 Correct: ✓
 Top-3 Contains Relevant: ✓
-Score: 0.42615569668390696
+Score: 0.31809992663812636
 
 ---
 
@@ -98,7 +98,7 @@ Expected Records: py-004
 Retrieved Records: py-004
 Top-1 Correct: ✓
 Top-3 Contains Relevant: ✓
-Score: 0.41421905026334305
+Score: 0.515536524274114
 
 ---
 
@@ -109,7 +109,7 @@ Expected Records: py-005
 Retrieved Records: py-005
 Top-1 Correct: ✓
 Top-3 Contains Relevant: ✓
-Score: 0.806410717036658
+Score: 0.7670822407268979
 
 ---
 
@@ -120,7 +120,7 @@ Expected Records: cpp-001
 Retrieved Records: cpp-001
 Top-1 Correct: ✓
 Top-3 Contains Relevant: ✓
-Score: 0.39631896815570555
+Score: 0.6383961503262543
 
 ---
 
@@ -131,7 +131,7 @@ Expected Records: java-002
 Retrieved Records: java-002
 Top-1 Correct: ✓
 Top-3 Contains Relevant: ✓
-Score: 0.4472135954999579
+Score: 0.7068281748188027
 
 ---
 
@@ -142,7 +142,7 @@ Expected Records: js-003
 Retrieved Records: js-003
 Top-1 Correct: ✓
 Top-3 Contains Relevant: ✓
-Score: 0.2321521303058385
+Score: 0.18496986178715746
 
 ---
 
@@ -153,7 +153,7 @@ Expected Records: py-009
 Retrieved Records: py-009
 Top-1 Correct: ✓
 Top-3 Contains Relevant: ✓
-Score: 0.22061624622564865
+Score: 0.44352067362850295
 
 ---
 
@@ -164,7 +164,7 @@ Expected Records: py-002
 Retrieved Records: py-002
 Top-1 Correct: ✓
 Top-3 Contains Relevant: ✓
-Score: 0.21409416345781457
+Score: 0.3141471118062256
 
 ---
 
@@ -172,10 +172,10 @@ Query ID: 15
 Query: "KeyError: dictionary key missing"
 Language: python
 Expected Records: py-006
-Retrieved Records: py-006, py-001
+Retrieved Records: py-006
 Top-1 Correct: ✓
 Top-3 Contains Relevant: ✓
-Score: 0.48992552765439484, 0.15512079613112173
+Score: 0.6922830325602002
 
 
 Retrieval Evaluation Complete.

@@ -8,6 +8,7 @@ references/
 .env.production
 .env.development
 .neon
+.netlify/
 
 # Next.js
 .next/

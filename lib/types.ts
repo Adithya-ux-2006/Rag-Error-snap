@@ -1,7 +1,7 @@
 // Core types for ErrorSnap RAG application
 import { SolveRequestInput } from './validation';
 
-export type Language = 'python' | 'java' | 'cpp' | 'javascript' | 'all';
+export type Language = 'auto' | 'python' | 'java' | 'cpp' | 'javascript' | 'all';
 
 export interface CodingErrorRecord {
   id: string;
@@ -42,6 +42,10 @@ export interface SolveResponse {
   threshold: number;
   error?: string;
   generationError?: string;
+  /** True only when the attached screenshot was actually sent to a vision-capable model. */
+  screenshotAnalyzed?: boolean;
+  /** True when a screenshot was attached in the original request. */
+  screenshotProvided?: boolean;
 }
 
 // Re-export for convenience

@@ -13,14 +13,22 @@ Built with:
 ## Features
 
 - Deterministic TF-IDF retrieval from a curated Neon PostgreSQL knowledge base
-- TF-IDF-based similarity ranking across error messages, names, tags, and keywords
+- Robust error input handling: traceback boilerplate stripping (frame lines, file/line
+  references, caret lines), camelCase-aware tokenization of compound exception names
+  (`SyntaxError` → `syntax error`), and vocabulary-guided segmentation of glued lowercase tokens
+- Optional language **auto-detection** from error text signatures (plus manual Python, Java, C++,
+  and JavaScript filters)
 - Top-3 evidence retrieval with configurable relevance threshold
-- Evidence-grounded answer generation via OpenRouter Chat Completions API
-- Explicit record IDs and relevance scores for every answer
-- Graceful fallback when LLM generation is unavailable
-- Screenshot upload, paste, drag-and-drop, and browser capture for vision-capable models
+- Evidence-grounded answer generation via OpenRouter Chat Completions API (server-side key only)
+- Explicit record IDs and relevance scores for every answer; the model is instructed to cite only
+  actual retrieved records and never fabricated IDs
+- Graceful, honest fallback when LLM generation is unavailable (`mode: retrieval_only`, no
+  fabricated answers)
+- Screenshot upload, paste, drag-and-drop, and browser capture for vision-capable models; the UI
+  states explicitly when an attached screenshot was not analyzed
 - Responsive light UI with graceful text-only fallback
-- Vitest unit tests for retrieval, validation, and generation
+- Vitest suites for retrieval, validation, generation, knowledge-base integrity, and the
+  production-defect regression (69 tests)
 - Retrieval evaluation script with top-1 and top-3 accuracy metrics
 
 ---
@@ -66,6 +74,12 @@ RATE_LIMIT_MAX_REQUESTS=20                          # optional, per instance/min
 npx tsx database/seed.ts
 ```
 
+The seed script is idempotent (per-record upserts, no destructive statements). When the database
+endpoint is unreachable from a build environment it logs a warning and exits 0 so deploys do not
+fail; run it from an environment with working DNS/Neon access to apply updated records. Netlify
+deploys run the seed automatically after each successful build (`npm run seed`), so git-driven
+deploys pick up record additions server-side.
+
 ### 4. Run the application
 
 ```bash
@@ -81,12 +95,17 @@ npm run dev
 npm test
 ```
 
+Current status: 5 test files / 69 tests, all passing.
+
 Test coverage:
-- Query validation (empty, too long, invalid language)
-- TF-IDF retrieval ranking
-- Language filtering
-- Database error handling
-- Generation provider error handling
+- Query validation (empty, too long, invalid language, screenshot data-URL and size limits)
+- TF-IDF retrieval ranking and language filtering, incl.
+  camelCase/glued-token segmentation and traceback boilerplate stripping
+- Database connection and error handling (missing `DATABASE_URL`, connection failure)
+- Generation provider error handling (missing key, HTTP errors, timeouts, provider failure)
+- Production-defect regression: the exact unterminated-string traceback, missing closing
+  parenthesis, IndentationError, ModuleNotFoundError, Java NullPointerException, JavaScript
+  ReferenceError, unrelated queries (honest no-match), and screenshot honesty flags
 
 ## Deployment checklist
 
@@ -108,7 +127,10 @@ This app uses Next.js Route Handlers as its backend; no separate web server is r
 npm run evaluate
 ```
 
-Results are written to `evaluation/results.csv`.
+Latest measured results over the 15-query evaluation set: Top-1 accuracy 100% (15/15), Top-3
+accuracy 100% (15/15). Baseline before the October 2026 retrieval fix: 86.67% / 93.33%, with the
+reported traceback-style query returning no evidence at all. Results are written to
+`evaluation/results.csv`.
 
 ---
 
@@ -155,7 +177,11 @@ See `report/architecture.mmd` for the Mermaid diagram.
 
 - Retrieval is keyword-based, not semantic embeddings
 - Generation requires a configured OpenRouter API key
-- Knowledge base is curated (not exhaustive)
+- Screenshot analysis requires a configured `OPENROUTER_VISION_MODEL`; without it, or when
+  generation is unavailable, images are not analyzed and the UI says so (no OCR fallback exists
+  yet)
+- Knowledge base is curated (not exhaustive); seeded via `npx tsx database/seed.ts` which must run
+  from an environment that can reach the Neon endpoint
 - No authentication or user accounts
 
 ---

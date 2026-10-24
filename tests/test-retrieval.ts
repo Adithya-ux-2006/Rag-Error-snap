@@ -167,7 +167,7 @@ describe('retrieval', () => {
 
     it('should search across all languages when language filter is "all"', () => {
       const result = retrieveEvidence(
-        'error',
+        'undefined variable',
         'all',
         mockRecords,
         3,

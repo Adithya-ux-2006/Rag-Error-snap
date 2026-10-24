@@ -1,11 +1,29 @@
 'use client';
 
-import { Copy, CheckCircle2, AlertCircle, Database, Cpu } from 'lucide-react';
+import { Copy, CheckCircle2, AlertCircle, Database, Cpu, ImageOff } from 'lucide-react';
 import { useState } from 'react';
 import { SolveResponse } from '@/lib/types';
 
 interface SolutionResultProps {
   result: SolveResponse;
+}
+
+/**
+ * Honest disclosure shown whenever a screenshot was attached but could not be
+ * analyzed (no vision-capable model configured, or generation unavailable).
+ */
+function ScreenshotNotice({ result }: { result: SolveResponse }) {
+  if (!result.screenshotProvided || result.screenshotAnalyzed) return null;
+  return (
+    <div className="flex items-start gap-2 rounded-[6px] border border-border bg-secondary/60 p-3">
+      <ImageOff className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+      <p className="text-xs text-muted-foreground leading-relaxed">
+        A screenshot was attached but was not analyzed (no vision-capable model is
+        configured, or the image analysis feature is unavailable). This result is based
+        on your pasted text only.
+      </p>
+    </div>
+  );
 }
 
 export default function SolutionResult({ result }: SolutionResultProps) {
@@ -49,6 +67,7 @@ export default function SolutionResult({ result }: SolutionResultProps) {
             </p>
           </div>
         </div>
+        <ScreenshotNotice result={result} />
       </div>
     );
   }
@@ -78,10 +97,11 @@ export default function SolutionResult({ result }: SolutionResultProps) {
         {result.exampleCode && renderCodeBlock(result.exampleCode)}
 
         <p className="text-xs text-muted-foreground border-t border-border pt-3 leading-relaxed">
-          The local LLM is not configured or unavailable. This result is retrieval-only, based on the
+          AI generation is not configured or unavailable. This result is retrieval-only, based on the
           top matching knowledge base records. A generated answer will appear once an OpenRouter API key
           is configured.
         </p>
+        <ScreenshotNotice result={result} />
       </div>
     );
   }
@@ -111,6 +131,7 @@ export default function SolutionResult({ result }: SolutionResultProps) {
           <h2 className="text-[15px] font-semibold">Solution Found</h2>
         </div>
         <p className="text-xs text-muted-foreground">Based on retrieved knowledge base evidence</p>
+        <ScreenshotNotice result={result} />
       </div>
 
       <div className="p-6 space-y-6">

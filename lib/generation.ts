@@ -1,6 +1,6 @@
 import { fetchAllRecords, DatabaseError } from './db';
 import { retrieveEvidence } from './retrieval';
-import { normalizeQuery } from './validation';
+import { normalizeQuery, detectLanguage } from './validation';
 import { CodingErrorRecord, RetrievedEvidence, Language, SolveResponse, SolveRequestInput } from './types';
 
 export class GenerationError extends Error {
@@ -61,6 +61,17 @@ export async function checkOllamaHealth(): Promise<boolean> {
  * only, not as instructions to follow. The model must cite only actual retrieved
  * record IDs and state when evidence is insufficient.
  */
+/**
+ * Get the configured vision-capable model, or null when not set.
+ */
+export function getConfiguredVisionModel(): string | null {
+  const model = process.env.OPENROUTER_VISION_MODEL;
+  if (model && model.trim().length > 0) {
+    return model;
+  }
+  return null;
+}
+
 export async function generateAnswer(
   evidence: RetrievedEvidence[],
   request: SolveRequestInput,
@@ -76,6 +87,8 @@ export async function generateAnswer(
       recordIds: [],
       mode: 'retrieval_only',
       threshold: 0.15,
+      screenshotProvided: !!request.screenshot,
+      screenshotAnalyzed: false,
     };
   }
 
@@ -97,10 +110,16 @@ export async function generateAnswer(
       recommendedFix: topEvidence.record.recommended_fix,
       exampleCode: topEvidence.record.example_code,
       threshold: 0.15,
+      screenshotProvided: !!request.screenshot,
+      screenshotAnalyzed: false,
     };
   }
 
-  const modelName = model || (request.screenshot ? process.env.OPENROUTER_VISION_MODEL : undefined) || getConfiguredModel() || 'meta-llama/llama-3.1-8b-instruct';
+  // A screenshot is only sent to the provider when a vision-capable model is
+  // explicitly configured; otherwise it would be rejected by text models.
+  const visionModel = request.screenshot ? getConfiguredVisionModel() : null;
+
+  const modelName = model || visionModel || getConfiguredModel() || 'meta-llama/llama-3.1-8b-instruct';
 
   // Construct context from retrieved evidence
   const contextSections = evidence.map((ev, i) => `
@@ -161,7 +180,7 @@ Instructions: Provide a concise, evidence-grounded answer following the system p
 `;
 
   // Build the request body for OpenAI-compatible Chat Completions API
-  const userContent = request.screenshot
+  const userContent = request.screenshot && visionModel
     ? [
         { type: 'text', text: userPrompt },
         { type: 'image_url', image_url: { url: request.screenshot } },
@@ -223,6 +242,8 @@ Instructions: Provide a concise, evidence-grounded answer following the system p
       exampleCode: parsed.exampleCode || undefined,
       generatedAnswer: generatedText,
       threshold: 0.15,
+      screenshotProvided: !!request.screenshot,
+      screenshotAnalyzed: !!visionModel,
     };
 
   } catch (error) {
@@ -241,6 +262,8 @@ Instructions: Provide a concise, evidence-grounded answer following the system p
       exampleCode: topEvidence.record.example_code,
       threshold: DEFAULT_SIMILARITY_THRESHOLD,
       generationError: error instanceof Error ? error.message : 'Generation provider unavailable',
+      screenshotProvided: !!request.screenshot,
+      screenshotAnalyzed: false,
     };
   }
 }
@@ -323,22 +346,29 @@ export async function solve(request: SolveRequestInput, dbClient?: DbClient): Pr
         mode: 'error',
         error: error.message,
         threshold: 0.15,
+        screenshotProvided: !!(request as { screenshot?: string }).screenshot,
+        screenshotAnalyzed: false,
       };
     }
     throw error;
   }
 
-  // Step 2: Retrieve evidence using TF-IDF
+  // Step 2: Resolve the language - when set to 'auto', detect it from the
+  // error text so retrieval can filter to matching records.
+  const resolvedLanguage: Language =
+    request.language === 'auto' ? detectLanguage(request.query) : (request.language as Language);
+  const effectiveRequest: SolveRequestInput = { ...request, language: resolvedLanguage };
+
   const evidence = retrieveEvidence(
     request.query,
-    request.language as Language | undefined,
+    resolvedLanguage,
     records,
     DEFAULT_TOP_K,
     DEFAULT_SIMILARITY_THRESHOLD
   );
 
   // Step 3: Generate answer using LLM
-  return generateAnswer(evidence, request);
+  return generateAnswer(evidence, effectiveRequest);
 }
 
 export type { DatabaseError } from './db';

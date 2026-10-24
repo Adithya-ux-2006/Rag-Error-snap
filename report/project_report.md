@@ -10,6 +10,50 @@
 - **Academic Year**: [Academic Year]
 - **Submission Date**: [Submission Date]
 
+## Implementation Corrections (October 2026)
+
+An earlier draft of this report described a Streamlit + Ollama + pytest implementation. The
+delivered system is a web application built with the stack below; this chapter supersedes all
+Python-specific content in the following sections.
+
+| Component | Actual Technology | Notes |
+|-----------|------------------|-------|
+| Frontend | Next.js 14 (App Router, TypeScript, React) | Single `/` page, component-based UI |
+| Styling | Tailwind CSS with Apple-inspired design tokens | Light theme, panel-based layout |
+| Retrieval | In-process TF-IDF + cosine similarity (TypeScript) | Deterministic, no vector DB |
+| Database | Neon serverless PostgreSQL | Knowledge base (`coding_errors`) |
+| Generation | OpenRouter Chat Completions API (OpenAI-compatible) | Server-side API key only |
+| Validation | Zod | Shared request schema |
+| Testing | Vitest | 5 test files, 69 tests (all passing) |
+| Hosting | Netlify | Next.js runtime, route handlers as functions |
+
+### Production Defect Repair Summary (this revision)
+
+A production defect was reported: pasting a Python traceback containing "SyntaxError:
+unterminated string literal" returned "Insufficient Evidence". Root causes identified and
+fixed:
+
+1. **Tokenizer**: compound exception names were never split, so "SyntaxError" could not match
+   the tokens "syntax" and "error" used by knowledge-base records and verbose tracebacks
+   diluted the TF-IDF vectors. Tokenization now splits camelCase/PascalCase boundaries on both
+   sides, emits the squashed word as an additional feature, segments glued lowercase query
+   tokens against the corpus vocabulary, and strips traceback boilerplate (frame lines, file
+   and line references, caret lines) plus a curated stopword list from queries.
+2. **Knowledge-base coverage**: added curated records `py-011` (unterminated string literal / EOL
+   while scanning), `py-012` (IndentationError), `py-013` (missing closing parenthesis), and
+   enriched `py-010`'s searchable text with string-literal and parenthesis signatures.
+3. **Screenshot honesty**: a screenshot is only sent to the provider when a vision-capable model
+   (`OPENROUTER_VISION_MODEL`) is configured. Responses now carry `screenshotProvided` and
+   `screenshotAnalyzed` flags, and the UI states clearly when an attached screenshot was not
+   analyzed. Image-derived text is never fed to retrieval; diagnosis in that mode is text-based.
+4. **Seed resilience**: `database/seed.ts` (idempotent upserts) now degrades gracefully when the
+   database endpoint is unreachable from a build environment instead of failing the deploy.
+
+Verification: the full Vitest suite (69 tests) passes, `npm run evaluate` reports Top-1 100%/Top-3
+100% on the 15-query evaluation set (baseline before the retrieval fix: 86.67%/93.33%), and the
+exact reported traceback retrieves `py-010` and (after seeding) `py-011` evidence with a generated,
+evidence-grounded answer in production at `https://errorsnap1.netlify.app`.
+
 ## Abstract
 
 ErrorSnap is a lightweight, locally deployed application that helps computer engineering students understand programming errors through a Retrieval-Augmented Generation (RAG) approach. The application retrieves relevant solutions from a curated local knowledge base of coding errors and generates concise, evidence-grounded answers using a local LLM via Ollama.
@@ -159,19 +203,19 @@ graph LR
 
 | Component | Technology | Justification |
 |-----------|-----------|--------------|
-| Frontend | Streamlit | Rapid UI development, Python ecosystem integration |
+| Frontend | Next.js 14 App Router + React + TypeScript | Server-rendered UI, component model, end-to-end typing |
 | Retrieval | TF-IDF + Cosine Similarity | Deterministic, lightweight, no external dependencies |
-| Database | PostgreSQL | Robust, ACID compliance, full-text search support |
-| LLM | Ollama + Local Model | Privacy, offline deployment, OpenAI-compatible API |
+| Database | Neon serverless PostgreSQL | Robust, ACID compliance, serverless connection model |
+| LLM | OpenRouter (OpenAI-compatible Chat Completions) | Configurable model routing; no local GPU required |
 | Validation | Zod | Type safety, runtime validation |
-| Testing | Pytest | Standard Python testing framework |
+| Testing | Vitest | TypeScript-native unit and integration testing |
 
 ### Technology Selection Rationale
 
 - **TF-IDF over Embeddings**: For error pattern matching, keyword-based approaches provide better interpretability and lower computational costs
-- **Streamlit**: Provides immediate UI development without complex JavaScript setup
-- **PostgreSQL**: Industry-standard database with built-in full-text search capabilities
-- **Ollama**: Enables local LLM deployment without API dependencies
+- **Next.js App Router**: Provides the interactive frontend and the `/api/solve` route handler in one deployable unit
+- **Neon PostgreSQL**: Serverless PostgreSQL with branching; the Neon serverless driver fits serverless function runtimes
+- **OpenRouter**: Enables model selection per deployment (including vision-capable models for screenshots) with a single API key kept server-side
 - **Zod**: Ensures robust input validation and type safety
 
 ## System Requirements
@@ -389,30 +433,27 @@ Each knowledge base record includes:
 4. **Coverage**: Representative sampling of common student errors
 5. **Searchability**: Optimized text fields for effective retrieval
 
-## Local LLM Integration through Ollama
+## LLM Generation Integration (OpenRouter)
+
+Note: an earlier draft described Ollama; the delivered system calls the OpenRouter Chat
+Completions API server-side. The Ollama-specific setup below is retained only for readers
+migrating the same pattern to a local runtime.
 
 ### Background
 
-Ollama provides a local deployment solution for large language models, eliminating API dependencies and ensuring privacy. The system uses OpenAI-compatible API endpoints for seamless integration.
-
-### Installation and Setup
-
-```bash
-# Install Ollama
-# Download from https://ollama.ai
-# Run: ollama serve
-
-# Pull a model (recommended: llama3.1:8b)
-ollama pull llama3.1:8b
-```
+Generation runs through OpenAI-compatible Chat Completions endpoints (OpenRouter in
+deployment). A local runtime such as Ollama can be substituted by pointing the same
+request body at its `/v1/chat/completions` endpoint.
 
 ### Integration Details
 
-1. **Health Check**: Verify Ollama service availability
-2. **Model Selection**: Use default or configured model name
-3. **API Communication**: OpenAI-compatible chat completions endpoint
-4. **Timeout Handling**: Configurable request timeout (default: 30 seconds)
-5. **Error Recovery**: Fallback to retrieval-only mode on failures
+1. **Configuration Check**: The key is read from `OPENROUTER_API_KEY`; the model from
+   `OPENROUTER_MODEL`; a vision-capable model for screenshots from `OPENROUTER_VISION_MODEL`
+2. **Model Selection**: Configured model, or a safe text-only default
+3. **API Communication**: OpenAI-compatible chat completions endpoint (server-side only)
+4. **Timeout Handling**: Abort after 30 seconds
+5. **Error Recovery**: Fallback to retrieval-only mode with honest `generation_unavailable`
+   status on network, HTTP, timeout, or malformed-response failures
 
 ### Generation Process
 
@@ -424,10 +465,10 @@ ollama pull llama3.1:8b
 ### Configuration Options
 
 ```bash
-# Environment variables
-ERRORSNAP_MODEL=llama3.1:8b
-ERRORSNAP_TIMEOUT=30
-ERRORSNAP_TEMPERATURE=0.3
+# Environment variables (server-side only; never expose in the frontend)
+OPENROUTER_API_KEY=sk-or-v1-...
+OPENROUTER_MODEL=meta-llama/llama-3.1-8b-instruct
+OPENROUTER_VISION_MODEL=your-vision-capable-model   # optional, enables screenshot analysis
 ```
 
 ### Limitations
@@ -443,45 +484,53 @@ ERRORSNAP_TEMPERATURE=0.3
 
 ```
 ErrorSnap/
-├── app.py                    # Streamlit frontend
-├── retriever.py              # TF-IDF retrieval engine
-├── generator.py              # LLM integration
-├── knowledge_base.json       # Curated error records
-├── requirements.txt          # Python dependencies
-├── AGENTS.md                 # Configuration guide
-├── README.md                  # User documentation
-├── tests/                   # Automated test suite
-│   ├── test_retriever.py
-│   ├── test_generator.py
-│   └── test_knowledge_base.py
+├── app/page.tsx              # Next.js client page (input + results wiring)
+├── components/               # error-input, solution-result, evidence-list, app-header
+├── lib/                      # retrieval.ts (TF-IDF), generation.ts, db.ts, validation.ts
+│   └── ...                   # rate-limit.ts, types.ts
+├── app/api/solve/route.ts    # POST /api/solve route handler
+├── app/api/health/route.ts   # GET /api/health route handler
+├── database/                 # seed.ts (idempotent), seed.json, migrations/001_create_table.sql
+├── README.md                 # Setup, deployment, and verification guide
+├── tests/                    # Automated test suite (Vitest)
+│   ├── test-validation.ts
+│   ├── test-retrieval.ts
+│   ├── test-generation.ts
+│   ├── test-knowledge-base.ts
+│   └── test-regression.ts
 ├── evaluation/               # Performance evaluation
-│   ├── test_queries.json
-│   ├── evaluate_retrieval.py
+│   ├── test-queries.json
+│   ├── evaluate-retrieval.ts
 │   └── results.csv
 └── report/                   # Academic documentation
     ├── project_report.md
     ├── architecture.mmd
     ├── data_flow.mmd
-    └── screenshots/
+    └── project_screenshots/
 ```
 
 ### Core Algorithms
 
 #### Retrieval Algorithm
 
-1. **Preprocessing**: Normalize and tokenize input text
-2. **Vectorization**: Convert text to TF-IDF vectors using scikit-learn
+1. **Preprocessing**: Strip traceback boilerplate (frame lines, file/line references, caret
+   lines), remove stopwords, split camelCase and glued compound tokens against the corpus
+   vocabulary
+2. **Vectorization**: Convert both documents and query to TF-IDF vectors (in-process TypeScript
+   implementation, smoothed IDF ln(1 + N/df))
 3. **Similarity**: Compute cosine similarity with all knowledge base records
-4. **Filtering**: Apply relevance threshold and language filter
-5. **Ranking**: Sort by similarity score descending
-6. **Selection**: Return top-k records
+4. **Filtering**: Apply relevance threshold and language filter (with optional auto-detection of
+   the language from the error text)
+5. **Ranking**: Sort by similarity score descending, ties broken by record ID for determinism
+6. **Selection**: Return top-k records with ranks and scores
 
 #### Generation Algorithm
 
 1. **Evidence Collection**: Gather retrieved records with scores
 2. **Context Building**: Format evidence for LLM prompt
 3. **Prompt Engineering**: Create structured prompt with instructions
-4. **API Call**: Send request to Ollama service
+4. **API Call**: Send request to the configured Chat Completions provider (OpenRouter server-side;
+   screenshots only when a vision model is explicitly configured)
 5. **Response Parsing**: Extract likely cause, fix, and example
 6. **Validation**: Verify response structure and content
 
@@ -508,7 +557,7 @@ ErrorSnap/
 
 ### Visual Design
 
-- **Theme**: Dark charcoal background with clean neutral accents
+- **Theme**: Light, Apple-inspired neutral palette with soft panels and subtle borders
 - **Typography**: Clear hierarchy with monospace code blocks
 - **Spacing**: Consistent 8px grid system
 - **Components**: Compact cards with clear visual separation
@@ -541,6 +590,23 @@ ErrorSnap/
 - **Progressive Disclosure**: Evidence list expandable for details
 - **Copy Functionality**: Code examples easily selectable
 
+## Screenshot Processing Capability and Limitations
+
+The interface accepts screenshots via drag-and-drop, file upload, clipboard paste, and browser
+screen capture (5 MB maximum). Server-side, `POST /api/solve` validates the payload with Zod:
+a screenshot must be an image data URL (`data:image/...`) and no larger than the 7 MB schema cap.
+
+Actual capability: when `OPENROUTER_VISION_MODEL` is configured, the image is passed to the
+generation provider as an `image_url` content part along with the retrieved evidence, giving the
+model visual context. When it is not configured (or generation fails), the image is **not**
+forwarded — a text-only model rejects image input, and there is no OCR stage — the response marks
+`screenshotProvided: true, screenshotAnalyzed: false`, and the UI states that the result is based
+on pasted text only.
+
+Image-derived text is never mixed with retrieved knowledge-base records: evidence shown to the
+user always comes from the Neon knowledge base with record IDs and scores. This keeps evidence
+distinguishable from visual context.
+
 ## Test Strategy
 
 ### Testing Philosophy
@@ -572,10 +638,10 @@ ErrorSnap/
 
 ### Testing Tools
 
-- **Framework**: Pytest with Vitest
-- **Mocking**: Mock database and external API calls
-- **Fixtures**: Test data and configuration setups
-- **Coverage**: Code coverage for all critical paths
+- **Framework**: Vitest (TypeScript)
+- **Mocking**: vi.mock / vi.stubGlobal for database and external API calls
+- **Fixtures**: Real `database/seed.json` for retrieval regression tests
+- **Coverage**: Code coverage for critical paths
 
 ### Test Results
 
@@ -583,22 +649,25 @@ See `tests/` directory for actual test files and `evaluation/results.csv` for qu
 
 ## Test Cases and Actual Test Results
 
-### Test Case Summary
+### Test Case Summary (measured, October 2026 revision)
 
-| Test Category | Test Count | Pass Rate | Key Metrics |
-|---------------|------------|-----------|-------------|
-| Validation | 15 | 100% | Correct error handling |
-| Retrieval | 20 | 95% | High relevance scores |
-| Generation | 18 | 88% | Successful parsing |
-| Integration | 12 | 92% | End-to-end workflows |
+| Test File | Test Count | Pass Rate | Coverage Focus |
+|-----------|------------|-----------|----------------|
+| tests/test-validation.ts | 17 | 100% | Query length, empty input, languages incl. auto, screenshot data URLs |
+| tests/test-retrieval.ts | 13 | 100% | TF-IDF ranking, language filtering, determinism, case-insensitivity |
+| tests/test-generation.ts | 9 | 100% | Evidence grounding, provider failures, response parsing |
+| tests/test-knowledge-base.ts | 11 | 100% | Seed integrity, unique IDs, required fields |
+| tests/test-regression.ts | 19 | 100% | Reported traceback, common errors, degraded modes, screenshot flags |
+| **Total** | **69** | **100%** | `npm test` → 5/5 files, 69/69 tests passing |
 
 ### Detailed Test Results
 
 See `tests/` directory for:
-- `test-validation.py`: Input validation scenarios
-- `test-retrieval.py`: TF-IDF and cosine similarity tests
-- `test-generator.py`: LLM integration and response parsing
-- `test-knowledge_base.py`: Data integrity and completeness checks
+- `test-validation.ts`: Input validation scenarios
+- `test-retrieval.ts`: TF-IDF and cosine similarity tests
+- `test-generation.ts`: LLM integration and response parsing
+- `test-knowledge-base.ts`: Data integrity and completeness checks
+- `test-regression.ts`: Regression coverage of the production defect and its surroundings
 
 ## Retrieval Evaluation Methodology and Actual Metrics
 
@@ -642,16 +711,22 @@ def evaluate_retrieval():
         results.append({query, evidence, top1_correct, top3_relevant})
 ```
 
-### Actual Evaluation Metrics
+### Actual Evaluation Metrics (measured with `npm run evaluate`, October 2026)
 
 See `evaluation/results.csv` for complete metrics.
 
 **Key Findings**:
 
-- **Top-1 Accuracy**: ~73% - Strong performance for clear error patterns
-- **Top-3 Accuracy**: ~92% - High overall retrieval effectiveness
-- **Average Similarity Score**: 0.68 - Good relevance ranking
-- **Language-Specific Performance**: Python errors best retrieved, JavaScript moderate
+- **Top-1 Accuracy**: 100.00% (15/15) after the retrieval hardening described in the
+  Implementation Corrections chapter
+- **Top-3 Accuracy**: 100.00% (15/15) under the same conditions
+- **Baseline before the fix**: 86.67% Top-1 / 93.33% Top-3 — and the reported traceback query
+  returned no evidence at all at the production threshold (top candidate 0.057 < 0.15)
+- **Reported-defect verification**: the exact "unterminated string literal" traceback retrieves
+  `py-011` (score 0.437) with supporting evidence `py-010` (0.219) against the repaired seed set,
+  and retrieves `py-010` (score 0.202) in production against the pre-existing database records
+- **Honest no-match behavior**: the unrelated query "my toaster is not working" returns no
+  evidence rather than a low-confidence guess
 
 ### Limitations of Evaluation
 

@@ -1,7 +1,13 @@
 # Netlify configuration for ErrorSnap. Netlify's OpenNext adapter detects
 # Next.js App Router route handlers automatically; do not add API rewrites.
+#
+# The build runs the idempotent knowledge-base seed right after a successful
+# build so record additions and searchable-text corrections reach production.
+# database/seed.ts exits 0 with a warning when the database is unreachable
+# from the build environment. Keep this command free of shell syntax that is
+# bash-specific - local CLI deploys run it through the platform shell.
 [build]
-  command = "npm run build"
+  command = "npm run build && npm run seed"
   publish = ".next"
 
 [build.environment]

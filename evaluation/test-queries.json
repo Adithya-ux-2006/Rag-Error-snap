@@ -31,7 +31,7 @@
   },
   {
     "id": 6,
-    "query": "Java KeyError",
+    "query": "Java NumberFormatException: For input string",
     "language": "java",
     "expected_record_ids": ["java-004"]
   },

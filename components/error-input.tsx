@@ -10,6 +10,7 @@ interface ErrorInputProps {
 }
 
 const LANGUAGES: { value: Language; label: string }[] = [
+  { value: 'auto', label: 'Auto detect' },
   { value: 'all', label: 'All Languages' },
   { value: 'python', label: 'Python' },
   { value: 'java', label: 'Java' },
